@@ -1,0 +1,304 @@
+#include <iostream>
+#include <thread> // this_thread, sleep_for()
+#include <chrono>  // milliseconds
+#include <string>
+#include <unistd.h>
+#include <termios.h>
+using namespace std;
+void mysleep(int a)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(a));
+}
+char getch(void)
+{
+    char buf = 0;
+    struct termios old = {0};
+    fflush(stdout);
+    if(tcgetattr(0, &old) < 0)
+        perror("tcsetattr()");
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+    if(tcsetattr(0, TCSANOW, &old) < 0)
+        perror("tcsetattr ICANON");
+    if(read(0, &buf, 1) < 0)
+        perror("read()");
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old) < 0)
+        perror("tcsetattr ~ICANON");
+   // printf("%c\n", buf);
+    return buf;
+ }
+
+void PrintTransition()
+{
+for(int i=0;i<3;i++)
+{
+cout<<"*************"<<endl;
+sleep(1);
+}
+
+
+
+}
+
+char getInput()
+{
+  char input;
+input=getch();
+return input;
+}
+void clear()
+{
+  std::cout << "\033[2J\033[1;1H";
+}
+void sleep(int sleep)
+{
+  
+  int i=0;
+while(i<sleep)
+i++;
+}
+
+
+int main() {
+  int map[15][15];
+  int round=1;
+  int score=0;
+  string fightAction;
+  int headX=0;
+  int defeatedMonsters=0;
+  int playerHP=10;
+  int enemyHP=5;
+  int fightChance=0;
+  bool isGrass=true;
+  bool triedToTalk=false;
+  bool isGameOver=false;
+  bool isFight=false;
+  int headY=0;
+  PrintTransition();
+  clear();
+  for(int i=0;i<15;i++)
+  {
+    for(int j=0;j<15;j++)
+    {
+      map[i][j]=0;
+
+    }
+  }
+
+ while(isGameOver==false)
+ {
+
+ 
+  while(isGrass==true&&isGameOver==false)
+  {
+    
+    clear();
+    for(int i=0;i<15;i++)
+  {
+    for(int j=0;j<15;j++)
+    {
+      if(headX==j&&headY==i)
+      cout<<"B";
+      else cout<<"#";
+
+    }
+    cout<<endl;
+  }
+  int input=getInput();
+  
+  if(input=='d'&&headX!=14)
+  {
+    headX++;
+  }
+  else if(input=='a'&&headX!=0)
+  {
+    headX--;
+  }
+  else if(input=='s'&&headY!=14)
+  {
+    headY++;
+
+  }
+  else if(input=='w'&&headY!=0)
+  {
+    headY--;
+    
+  }
+  else if(input=='q')
+  {
+    isGameOver=true;
+    
+  }
+  fightChance=rand()%100;
+  if(fightChance>85)
+  {
+    isGrass=false;
+    isFight=true;
+    round=1;
+    triedToTalk=false;
+  }
+  clear();
+  
+  }
+  
+
+PrintTransition();
+
+  while(isFight==true&&isGameOver==false)
+  {
+    
+    
+    sleep(5);
+    clear();
+    
+    cout<<"Score: "<< score<<endl;
+    cout<<"Your health: "<<playerHP<<" HP"<<endl;
+    cout<<endl;
+  
+    if(round==1)
+    {
+      
+      
+      enemyHP=rand()%10;
+    
+      cout<<"You are being attacked by a monster!"<<endl;
+    }
+    
+
+    cout<<"The enemy is at " <<enemyHP<<" health.";
+    cout<<"Choose your action: attack / talk / run away / quit";
+    cout<<endl;
+    
+    
+    getline(cin, fightAction);
+    if(fightAction=="attack")
+    {
+       
+      int attackAmount=rand()%10;
+      mysleep(3000);
+     
+      cout<<"You attacked the enemy for " <<attackAmount <<" points.";
+      mysleep(3000);
+      if(enemyHP<=attackAmount) 
+      {
+        mysleep(1000);
+        cout<<"You've defeated the enemy.";
+        mysleep(1000);
+        sleep(3);
+        score++;
+        isFight=false;
+        isGrass=true;
+      }
+      enemyHP=enemyHP-attackAmount;
+      
+    }
+    else if(fightAction=="talk"&&triedToTalk==false)
+    {
+      int talkChance=rand()%100;
+      if(talkChance>50)
+      {
+        mysleep(1000);
+        cout<<"You became friends with the monster!";
+        mysleep(1000);
+        sleep(3);
+        score++; 
+        isFight=false;
+        isGrass=true;
+      }
+      else 
+      {
+        mysleep(1000);
+        cout<<"Talking didn't work!";
+        mysleep(1000);
+        sleep(3);
+         triedToTalk=true;
+
+      }
+    }
+    else if(fightAction=="talk"&&triedToTalk==true)
+    {
+      mysleep(1000);
+      cout<<"You've already tried talking! Try something else.";
+      mysleep(1000);
+      sleep(3);
+    }
+    else if(fightAction=="run away")
+    {
+      int runAwayChance=rand()%100;
+     
+      if(runAwayChance>1)
+      {
+        mysleep(1000);
+        cout<<"You managed to run away!"<<endl; 
+        mysleep(1000);
+         
+          isGrass=true;
+          isFight=false;
+      }
+      else 
+      {
+        mysleep(1000);
+        cout<<"You couldn't run away!"<<endl;
+        mysleep(1000);
+        
+        int damage=rand()%10;
+        mysleep(1000);
+        cout<<"You got hit for "<<damage<<" points!"<<endl;
+        mysleep(1000);
+        playerHP=playerHP-damage;
+
+        if(playerHP<=0)
+        {
+          mysleep(1000);
+          cout<<"You were defeated, try again!"<<endl;
+          mysleep(1000);
+          isGameOver=true;
+          isGrass=false;
+          isFight=false;
+        }
+        
+      }
+
+      
+    }
+    else if(fightAction=="quit")
+    {
+      isGameOver=true;
+      isGrass=false;
+      isFight=false;
+    
+    }
+     else if(fightAction=="win")
+    {
+      mysleep(1000);
+      cout<<"You won this battle!"<<endl; 
+      mysleep(1000);
+      score++;
+      isFight=false;
+      isGrass=true;
+    
+    }
+    else 
+    {
+      mysleep(1000);
+      cout<<"Bad input, try again";
+      mysleep(1000);
+    }
+    
+    
+    round++;
+    
+  }
+
+ }
+ if(isGameOver==true)
+ {
+   clear();
+   cout<<"Game over!"<<endl; 
+ }
+  
+}
