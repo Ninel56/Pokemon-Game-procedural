@@ -5,10 +5,76 @@
 #include <unistd.h>
 #include <termios.h>
 using namespace std;
-void mysleep(int a)
+class ScreenEffects {       // The class
+  public:             // Access specifier
+    void PrintTransition()
+{
+for(int i=0;i<3;i++)
+    {
+cout<<"*************"<<endl;
+std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+}
+    void screenSleep(int a)
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(a));
 }
+ void screenSleep()
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+void clear()
+{
+  std::cout << "\033[2J\033[1;1H";
+}
+void sleep(int sleep)
+{
+  
+  int i=0;
+while(i<sleep)
+i++;
+}
+};
+class inputCatcher {       // The class
+  public:             // Access specifier
+  char getInput()
+{
+  char input;
+input=getch();
+return input;
+}
+string getInputWithSpace()
+{
+  string fightAction;
+  getline(cin, fightAction);
+  return fightAction;
+}
+    char getch(void)
+{
+    char buf = 0;
+    struct termios old = {0};
+    fflush(stdout);
+    if(tcgetattr(0, &old) < 0)
+        perror("tcsetattr()");
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+    if(tcsetattr(0, TCSANOW, &old) < 0)
+        perror("tcsetattr ICANON");
+    if(read(0, &buf, 1) < 0)
+        perror("read()");
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old) < 0)
+        perror("tcsetattr ~ICANON");
+   // printf("%c\n", buf);
+    return buf;
+ }
+    
+};
+
 char getch(void)
 {
     char buf = 0;
@@ -32,273 +98,664 @@ char getch(void)
     return buf;
  }
 
-void PrintTransition()
+
+
+class Character
 {
-for(int i=0;i<3;i++)
-{
-cout<<"*************"<<endl;
-sleep(1);
-}
-
-
-
-}
-
-char getInput()
-{
-  char input;
-input=getch();
-return input;
-}
-void clear()
-{
-  std::cout << "\033[2J\033[1;1H";
-}
-void sleep(int sleep)
-{
-  
-  int i=0;
-while(i<sleep)
-i++;
-}
-
-
-int main() {
-  int map[15][15];
-  int round=1;
-  int score=0;
-  string fightAction;
-  int headX=0;
-  int defeatedMonsters=0;
-  int playerHP=10;
-  int enemyHP=5;
-  int fightChance=0;
-  bool isGrass=true;
-  bool triedToTalk=false;
-  bool isGameOver=false;
-  bool isFight=false;
-  int headY=0;
-  PrintTransition();
-  clear();
-  for(int i=0;i<15;i++)
-  {
-    for(int j=0;j<15;j++)
+    public:
+    Character()
     {
-      map[i][j]=0;
-
+        HP=10;
     }
-  }
-
- while(isGameOver==false)
- {
-
- 
-  while(isGrass==true&&isGameOver==false)
-  {
+    protected:
+    int HP;
     
-    clear();
-    for(int i=0;i<15;i++)
+    
+};
+class Player : public Character
+{
+    public:
+    Player()
+    {
+        HP=10;
+        score=0;
+        positionY=0;
+        positionX=0;
+        defeatedMonsters=0;
+         attackAmount=rand()%10;
+         int damage=0;
+    }
+    int getPositionX()
+    {
+        return positionX;
+    }
+    void subtractHP(int damageAmount)
+    {
+      HP=HP-damageAmount;
+    }
+    int getDamage()
+    {
+      return damage;
+    }
+    void setHP(int newHP)
+    {
+      HP=newHP;
+    }
+    void randomizeDamage()
+    {
+      damage=rand()%10;
+    }
+    int getAttackAmount()
+    {
+      return attackAmount;
+    }
+    void addPositionX(int add)
+    {
+      positionX=positionX+add;
+    }
+    void randomizeAttackAmount()
+    {
+       attackAmount=rand()%10;
+    }
+    void addPositionY(int add)
+    {
+      positionY=positionY+add;
+    }
+     void subtractPositionX(int subtract)
+    {
+      positionX=positionX-subtract;
+    }
+    void subtractPositionY(int subtract)
+    {
+      positionY=positionY- subtract;
+    }
+    int getPositionY()
+    {
+        return positionY;
+    }
+    int getScore()
+    {
+        return score;
+    }
+    void increaseScore()
+    {
+      score++;
+    }
+    int getHP()
+    {
+        return HP;
+    }
+    int getDefeatedMonsters()
+    {
+        return defeatedMonsters;
+    }
+    private:
+    int attackAmount;
+    int damage;
+    int positionX;
+    int positionY;
+    int score;
+    int HP;
+    int defeatedMonsters;
+    
+    
+};
+class Map {       
+  public: 
+  int getmapSize1()
+  {
+    return mapSize1;
+  }
+  void printMap( Player ThePlayer)
+{
+	for(int i=0;i<15;i++)
   {
     for(int j=0;j<15;j++)
     {
-      if(headX==j&&headY==i)
+      if(ThePlayer.getPositionX()==j&&ThePlayer.getPositionY()==i)
       cout<<"B";
       else cout<<"#";
 
     }
     cout<<endl;
   }
-  int input=getInput();
+
+}
+
+  int getmapSize2()
+  {
+    return mapSize2;
+  }
+  void setmapSize1(int newMapSize)
+  {
+    mapSize1=newMapSize;
+  }
+  void setmapSize2(int newMapSize)
+  {
+    mapSize2=newMapSize;
+  }
+  Map()
+  {
+      mapSize1=15;
+      mapSize2=15;
+      for(int i=0;i<mapSize1;i++)
+  {
+    for(int j=0;j<mapSize2;j++)
+    {
+      map[i][j]=0;
+
+    }
+  }
+  }
   
-  if(input=='d'&&headX!=14)
+   int map[15][15]; 
+   private:
+   int mapSize1;
+   int mapSize2;
+  
+};
+
+class Enemy : public Character
+{
+    public:
+    int getEnemyHP()
+    {
+      return enemyHP;
+    }
+    void subtractHP(int attackAmount)
+    {
+        enemyHP=enemyHP-attackAmount;
+    }
+    void randomizeEnemyHP()
+    {
+      enemyHP=rand()%10;
+    }
+    Enemy()
+    {
+       enemyHP=5;
+    }
+    private:
+    
+    
+    int enemyHP;
+    
+    
+    
+};
+
+
+class GameLogic
+{
+    private:
+    int talkChance;
+    int runAwayChance;
+    int fightChance;
+    int round;
+    string fightAction;
+    bool isGrass;
+    bool triedToTalk;
+  bool isGameOver;
+  bool isFight;
+    
+    public:
+    int getFightChance()
+    {
+        return fightChance;
+    }
+    int getRunAwayChance()
+    {
+      return runAwayChance;
+    }
+    int getTalkChance()
+    {
+      return talkChance;
+    }
+    void setFightAction(string newFightAction)
+    {
+        fightAction=newFightAction;
+    }
+    void randomizeFightChance()
+    {
+        fightChance=rand()%100;
+    }
+    void setIsGameOverFalse()
+    {
+      isGameOver=false;
+    }
+    void setIsGameOverTrue()
+    {
+      isGameOver=true;
+    }
+    void setIsGrassTrue()
+    {
+      isGrass=true;
+    }
+    void setIsGrassFalse()
+    {
+      isGrass=false;
+    }
+    void setTriedToTalkTrue()
+    {
+      triedToTalk=true;
+    }
+    void setTriedToTalkFalse()
+    {
+     triedToTalk=false;
+    }
+    void setIsFightTrue()
+    {
+      isFight=true;
+    }
+    void setIsFightFalse()
+    {
+      isFight=false;
+    }
+    bool getIsGrass()
+    {
+        return isGrass;
+    }
+    void setRound(int newRound )
+    {
+      round=newRound;
+    }
+    bool getTriedToTalk()
+    {
+        return triedToTalk;
+    }
+    bool getIsGameOver()
+    {
+        return isGameOver;
+    }
+    bool getIsFight()
+    {
+        return isFight;
+    }
+    int getRound()
+    {
+        return round;
+    }
+    void increaseRound()
+    {
+      round++;
+    }
+    string getFightAction()
+    {
+        return fightAction;
+    }
+    void randomizeTalkChance()
+    {
+      talkChance=rand()%100;
+    }
+    void randomizeRunAwayChance()
+    {
+      talkChance=rand()%100;
+    }
+    GameLogic()
+    {
+        round=1;
+        talkChance=rand()%100;
+        runAwayChance=rand()%100;
+        fightChance=0;
+        isGrass=true;
+         triedToTalk=false;
+   isGameOver=false;
+   isFight=false;
+    }
+    
+};
+
+class GameText
+{
+  public:
+  string score="Score:";
+  string space=" ";
+  string youBecameFriends="You became friends with the monster!";
+  string youDefeatedTheEnemy="You've defeated the enemy.";
+  string yourHealth="Your health:";
+  string HP="HP";
+  string badInputTryAgain="Bad input, try again";
+  string gameOver="Game Over!";
+  string forString="for ";
+  string youGotHitFor="You got hit for";
+  string managedToRunAway="You managed to run away!";
+  string couldntRunAway="You couldn't run away!";
+  string talkingDidntWork="Talking didn't work!";
+  string youAttackedTheEnemy="You attacked the enemy for " ;
+  string points="points.";
+  string trySomethingElse="You've already tried talking! Try something else.";
+  string youAreAttacked="You are being attacked by a monster!";
+  string enemyIsAt="The enemy is at ";
+  string health="health.";
+  string youWonThisBattle="You won this battle!";
+  string youWereDefeated="You were defeated, try again!";
+  string chooseYourAction="Choose your action: attack / talk / run away / quit" ;
+  string getText(string message)
   {
-    headX++;
+    return message;
   }
-  else if(input=='a'&&headX!=0)
-  {
-    headX--;
-  }
-  else if(input=='s'&&headY!=14)
-  {
-    headY++;
+  
+};
+bool testPlayerHP(int HP)
+{
+  try {
+  
+  if (HP <=10) {
+    cout << "HP stats haven't been changed"<<endl;
+    return true;
+  } else {
+    throw (HP);
 
   }
-  else if(input=='w'&&headY!=0)
+}
+catch (int HP) {
+  cout << "Player health was changed! You're cheating \n";
+
+  cout << "Setting health back to default"<<endl;
+  return false;
+}
+
+}
+bool testAttackAmount(int attackAmount)
+{
+  try {
+  
+  if (attackAmount <=10) {
+    cout << "Damage stats haven't been changed"<<endl;
+    return true;
+  } else {
+    throw (attackAmount);
+
+  }
+}
+catch (int attackAmount) {
+  cout << "Player damage was changed! You're cheating \n"<<endl;
+
+  cout << "Setting damage back to default"<<endl;
+  return false;
+}
+
+}
+bool testMapSize(int mapSize1, int mapSize2)
+{
+  try {
+  
+  if (mapSize1==15) {
+    cout << "Map stats haven't been changed"<<endl;
+    return true;
+  } else {
+    throw (mapSize1);
+
+  }
+if (mapSize2==15) {
+    cout << "Map stats haven't been changed"<<endl;
+    return true;
+  } else {
+    throw (mapSize2);
+
+  }
+}
+catch (int mapSize1) {
+  cout << "Map sizes were changed! You're cheating! \n"<<endl;
+
+  cout << "Setting map back to default"<<endl;
+  return false;
+}
+
+
+}
+int main() {
+  
+  ScreenEffects Screen;
+  GameLogic Logic;
+  GameText GameText;
+  Map Map;
+  bool fight=false;
+  Enemy Enemy;
+  Player Player;
+  inputCatcher InputCatcher;
+  if(testPlayerHP(Player.getHP())==false)
   {
-    headY--;
+    Player.setHP(10);
+  }
+
+if(testMapSize(Map.getmapSize1(),Map.getmapSize2())==false)
+  {
+    Map.setmapSize1(15);
+    Map.setmapSize2(15);
+  }
+
+if(testAttackAmount(Player.getAttackAmount())==false)
+  {
+    Player.randomizeAttackAmount();
+  }
+
+  
+  Screen.PrintTransition();
+  Screen.clear();
+  
+
+ while(Logic.getIsGameOver()==false)
+ {
+ 
+ 
+  while(Logic.getIsGrass()==true && Logic.getIsGameOver()==false)
+  {
+    
+    Screen.clear();
+   /* for(int i=0;i<15;i++)
+  {
+    for(int j=0;j<15;j++)
+    {
+      if(Player.getPositionX()==j&&Player.getPositionY()==i)
+      cout<<"B";
+      else cout<<"#";
+
+    }
+    cout<<endl;
+  }*/
+
+  Map.printMap(Player);
+
+  char input=getch();
+  if(input=='d'&&Player.getPositionX()!=14)
+  {
+    Player.addPositionX(1);
+  }
+  else if(input=='a'&&Player.getPositionX()!=0)
+  {
+    Player.subtractPositionX(1);
+  }
+  else if(input=='s'&&Player.getPositionY()!=14)
+  {
+    Player.addPositionY(1);
+
+  }
+  else if(input=='w'&&Player.getPositionY()!=0)
+  {
+    Player.subtractPositionY(1);
     
   }
   else if(input=='q')
   {
-    isGameOver=true;
+    Logic.setIsGameOverTrue();
     
   }
-  fightChance=rand()%100;
-  if(fightChance>85)
+  Logic.randomizeFightChance();
+  if(Logic.getFightChance()>91)
   {
-    isGrass=false;
-    isFight=true;
-    round=1;
-    triedToTalk=false;
+    Logic.setIsGrassFalse();
+    Logic.setIsFightTrue();
+    Logic.setRound(1);
+    Logic.setTriedToTalkFalse();
+    
+    Logic.setIsGameOverFalse();
   }
-  clear();
+  Screen.clear();
   
   }
   
 
-PrintTransition();
 
-  while(isFight==true&&isGameOver==false)
+  while(Logic.getIsFight() ==true && Logic.getIsGameOver() == false)
   {
+    if(Logic.getRound()==1) Screen.PrintTransition();
     
+   
+    Screen.clear();
     
-    sleep(5);
-    clear();
-    
-    cout<<"Score: "<< score<<endl;
-    cout<<"Your health: "<<playerHP<<" HP"<<endl;
+    cout<<GameText.getText(GameText.score)<< Player.getScore()<<endl;
+    cout<<GameText.getText(GameText.yourHealth)<<" "<<Player.getHP()<<" "<<GameText.getText(GameText.HP)<<endl;
     cout<<endl;
+   
   
-    if(round==1)
+    if(Logic.getRound()==1)
     {
       
       
-      enemyHP=rand()%10;
+      Enemy.randomizeEnemyHP();
     
-      cout<<"You are being attacked by a monster!"<<endl;
+      cout<< GameText.getText(GameText.youAreAttacked)<<endl;
     }
     
 
-    cout<<"The enemy is at " <<enemyHP<<" health.";
-    cout<<"Choose your action: attack / talk / run away / quit";
+    cout<<GameText.getText(GameText.enemyIsAt)<<Enemy.getEnemyHP()<<" "<< GameText.getText(GameText.health);
+    cout<<GameText.getText(GameText.chooseYourAction);
     cout<<endl;
     
     
-    getline(cin, fightAction);
-    if(fightAction=="attack")
+    Logic.setFightAction(InputCatcher.getInputWithSpace());
+    if(Logic.getFightAction()=="attack")
     {
        
-      int attackAmount=rand()%10;
-      mysleep(3000);
+      
+      
      
-      cout<<"You attacked the enemy for " <<attackAmount <<" points.";
-      mysleep(3000);
-      if(enemyHP<=attackAmount) 
+      cout<<GameText.getText(GameText.youAttackedTheEnemy)<<GameText.getText(GameText.forString)<<Player.getAttackAmount()<<" "<<GameText.getText(GameText.points)<<endl;
+      Screen.screenSleep(3000);
+      if(Enemy.getEnemyHP()<=Player.getAttackAmount()) 
       {
-        mysleep(1000);
-        cout<<"You've defeated the enemy.";
-        mysleep(1000);
-        sleep(3);
-        score++;
-        isFight=false;
-        isGrass=true;
+        Screen.screenSleep();
+        cout<<GameText.getText(GameText.youDefeatedTheEnemy)<<endl;
+        Screen.screenSleep();
+        
+        Player.increaseScore();
+        Logic.setIsFightFalse();
+        Logic.setIsGrassTrue();
       }
-      enemyHP=enemyHP-attackAmount;
+      Enemy.subtractHP(Player.getAttackAmount());
+     
       
     }
-    else if(fightAction=="talk"&&triedToTalk==false)
+    else if(Logic.getFightAction()=="talk"&&Logic.getTriedToTalk()==false)
     {
-      int talkChance=rand()%100;
-      if(talkChance>50)
+      Logic.randomizeTalkChance();
+      if(Logic.getTalkChance()>50)
       {
-        mysleep(1000);
-        cout<<"You became friends with the monster!";
-        mysleep(1000);
-        sleep(3);
-        score++; 
-        isFight=false;
-        isGrass=true;
+        Screen.screenSleep();
+        cout<<GameText.getText(GameText.youBecameFriends)<<endl;
+        Screen.screenSleep();
+        
+        Player.increaseScore();
+        Logic.setIsFightFalse();
+        Logic.setIsGrassTrue();
       }
       else 
       {
-        mysleep(1000);
-        cout<<"Talking didn't work!";
-        mysleep(1000);
-        sleep(3);
-         triedToTalk=true;
+        Screen.screenSleep();
+        cout<<GameText.getText(GameText.talkingDidntWork)<<endl;
+        Screen.screenSleep();
+        //Screen.sleep(3);
+         Logic.setTriedToTalkTrue();
 
       }
     }
-    else if(fightAction=="talk"&&triedToTalk==true)
+    else if(Logic.getFightAction()=="talk"&&Logic.getTriedToTalk()==true)
     {
-      mysleep(1000);
-      cout<<"You've already tried talking! Try something else.";
-      mysleep(1000);
+      Screen.screenSleep();
+      cout<<GameText.getText(GameText.trySomethingElse)<<endl;
+      Screen.screenSleep();
       sleep(3);
     }
-    else if(fightAction=="run away")
+    else if(Logic.getFightAction()=="run away")
     {
-      int runAwayChance=rand()%100;
-     
-      if(runAwayChance>1)
+      
+     Logic.randomizeRunAwayChance();
+      if(Logic.getRunAwayChance()>1)
       {
-        mysleep(1000);
-        cout<<"You managed to run away!"<<endl; 
-        mysleep(1000);
+        Screen.screenSleep();
+        cout<<GameText.getText(GameText.managedToRunAway)<<endl; 
+        Screen.screenSleep();
          
-          isGrass=true;
-          isFight=false;
+          Logic.setIsGrassTrue();
+          Logic.setIsFightFalse();
       }
       else 
       {
-        mysleep(1000);
-        cout<<"You couldn't run away!"<<endl;
-        mysleep(1000);
+       Screen.screenSleep();
+        cout<<GameText.getText(GameText.couldntRunAway)<<endl;
+        Screen.screenSleep();
         
-        int damage=rand()%10;
-        mysleep(1000);
-        cout<<"You got hit for "<<damage<<" points!"<<endl;
-        mysleep(1000);
-        playerHP=playerHP-damage;
+        Player.randomizeDamage();
 
-        if(playerHP<=0)
+        Screen.screenSleep();
+        cout<<GameText.getText(GameText.youGotHitFor)<<Player.getDamage()<<GameText.getText(GameText.points)<<endl;
+        Screen.screenSleep();
+        Player.subtractHP(Player.getDamage());
+        
+
+        if(Player.getHP()<=0)
         {
-          mysleep(1000);
-          cout<<"You were defeated, try again!"<<endl;
-          mysleep(1000);
-          isGameOver=true;
-          isGrass=false;
-          isFight=false;
+          Screen.screenSleep();
+          cout<<GameText.getText(GameText.youWereDefeated)<<endl;
+          Screen.screenSleep();
+          Logic.setIsGameOverTrue();
+          Logic.setIsGrassFalse();
+          Logic.setIsFightFalse();
+          
         }
         
       }
 
       
     }
-    else if(fightAction=="quit")
+    else if(Logic.getFightAction()=="quit")
     {
-      isGameOver=true;
-      isGrass=false;
-      isFight=false;
+      Logic.setIsGameOverTrue();
+          Logic.setIsGrassFalse();
+          Logic.setIsFightFalse();
+
+      
     
     }
-     else if(fightAction=="win")
+     else if(Logic.getFightAction()=="win")
     {
-      mysleep(1000);
-      cout<<"You won this battle!"<<endl; 
-      mysleep(1000);
-      score++;
-      isFight=false;
-      isGrass=true;
+      Screen.screenSleep();
+      cout<<GameText.getText(GameText.youWonThisBattle)<<endl; 
+     Screen.screenSleep();
+      Player.increaseScore();
+       Logic.setIsGrassTrue();
+        Logic.setIsFightFalse();
+        fight=false;
+      
     
     }
     else 
     {
-      mysleep(1000);
-      cout<<"Bad input, try again";
-      mysleep(1000);
+     Screen.screenSleep();
+      cout<<GameText.getText(GameText.badInputTryAgain)<<endl;
+      Screen.screenSleep();
     }
     
+    Logic.increaseRound();
     
-    round++;
     
   }
 
  }
- if(isGameOver==true)
+ if(Logic.getIsGameOver()==true)
  {
-   clear();
-   cout<<"Game over!"<<endl; 
+   Screen.clear();
+   cout<<GameText.getText(GameText.gameOver)<<endl; 
  }
   
 }
